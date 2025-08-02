@@ -1,0 +1,93 @@
+x-leprikon: &leprikon
+  image: qbsoftware/svcspektrum
+  depends_on:
+    - postgres
+    - redis
+    - smtprelay
+    - mysql-boskovice
+    - mysql-letovice
+  environment:
+    LEPRIKON_DOMAIN: svcspektrum.cz
+    DATABASE_ENGINE: django.db.backends.postgresql
+    DATABASE_HOST: ''
+    DATABASE_NAME: svcspektrum
+    DATABASE_USER: svcspektrum
+    DATABASE_PASSWORD: dbpassword
+    EMAIL_HOST: smtprelay
+    EMAIL_SUBJECT_PREFIX: '[SVČ Spektrum]'
+    CACHE_LOCATION: unix:///var/run/redis/redis.sock
+    SECRET_KEY: secretkey
+    SENTRY_ENVIRONMENT: 'svcspektrum'
+    SERVER_EMAIL: '"SVČ Spektrum" <svcspektrum@leprikon.cz>'
+    SUPERVISORD_RUN: "gunicorn cron"
+  volumes:
+    - ./data:/app/data
+    - ./media:/app/htdocs/media
+    - ./static:/app/htdocs/static
+    - ./run:/app/run
+    - ./svcspektrum:/app/svcspektrum
+    - postgres:/var/run/postgresql
+    - redis:/var/run/redis
+
+services:
+
+  leprikon:
+    <<: *leprikon
+    build: .
+
+  leprikon-collectstatic:
+    <<: *leprikon
+    command: leprikon collectstatic --no-input
+
+  redis:
+    image: redis
+    command: bash -c "chmod 0777 /var/run/redis && redis-server --appendonly yes --unixsocket /var/run/redis/redis.sock --unixsocketperm 777"
+    volumes:
+      - ./redis:/data
+      - redis:/var/run/redis
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: svcspektrum
+      POSTGRES_USER: svcspektrum
+      # use different password in production!
+      POSTGRES_PASSWORD: dbpassword
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+      - postgres:/var/run/postgresql
+
+  mysql-boskovice:
+    image: mariadb:10
+    environment:
+      MYSQL_DATABASE: svcboskovice
+      MYSQL_USER: svcboskovice
+      # use different passwords in production!
+      MYSQL_PASSWORD: dbpassword
+      MYSQL_ROOT_PASSWORD: rootdbpassword
+    volumes:
+      - ./mysql-boskovice:/var/lib/mysql
+
+  mysql-letovice:
+    image: mariadb:10
+    environment:
+      MYSQL_DATABASE: svcletovice
+      MYSQL_USER: svcletovice
+      # use different passwords in production!
+      MYSQL_PASSWORD: dbpassword
+      MYSQL_ROOT_PASSWORD: rootdbpassword
+    volumes:
+      - ./mysql-letovice:/var/lib/mysql
+
+  smtprelay:
+    image: juanluisbaptiste/postfix
+    environment:
+      SERVER_HOSTNAME: leprikon.cz
+      SMTP_SERVER: mail.webglobe.cz
+      SMTP_PORT: 465
+      SMTP_USERNAME: svcspektrum@leprikon.cz
+      SMTP_PASSWORD: emailpassword
+
+volumes:
+  postgres:
+  redis:
