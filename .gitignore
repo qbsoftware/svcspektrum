@@ -1,1 +1,12 @@
-svcspektrum-temp
+/.venv
+/data
+/docker-compose.*.yml
+/leprikon
+/media
+/mysql*
+/postgres*
+/redis*
+/run
+/static
+/svcspektrum-temp
+__pycache__
