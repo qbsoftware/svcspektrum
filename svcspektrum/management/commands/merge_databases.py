@@ -197,6 +197,7 @@ class Command(BaseCommand):
         self.perform_operation("Merging timesheet entries", self.merge_timesheet_entries)
         self.perform_operation("Merging journals", self.merge_journals)
         self.perform_operation("Merging journal entries", self.merge_journal_entries)
+        self.perform_operation("Merging messages", self.merge_messages)
         self.stdout.write(self.style.SUCCESS("Successfully merged all data"))
 
     def perform_operation(self, label: str, func: Callable[[], None], long: bool = False):
