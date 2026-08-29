@@ -4,8 +4,6 @@ x-leprikon: &leprikon
     - postgres
     - redis
     - smtprelay
-    - mysql-boskovice
-    - mysql-letovice
   environment:
     LEPRIKON_DOMAIN: svcspektrum.cz
     DATABASE_ENGINE: django.db.backends.postgresql
@@ -56,28 +54,6 @@ services:
     volumes:
       - ./postgres:/var/lib/postgresql/data
       - postgres:/var/run/postgresql
-
-  mysql-boskovice:
-    image: mariadb:10
-    environment:
-      MYSQL_DATABASE: svcboskovice
-      MYSQL_USER: svcboskovice
-      # use different passwords in production!
-      MYSQL_PASSWORD: dbpassword
-      MYSQL_ROOT_PASSWORD: rootdbpassword
-    volumes:
-      - ./mysql-boskovice:/var/lib/mysql
-
-  mysql-letovice:
-    image: mariadb:10
-    environment:
-      MYSQL_DATABASE: svcletovice
-      MYSQL_USER: svcletovice
-      # use different passwords in production!
-      MYSQL_PASSWORD: dbpassword
-      MYSQL_ROOT_PASSWORD: rootdbpassword
-    volumes:
-      - ./mysql-letovice:/var/lib/mysql
 
   smtprelay:
     image: juanluisbaptiste/postfix
